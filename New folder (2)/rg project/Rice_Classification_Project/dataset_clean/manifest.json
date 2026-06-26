@@ -1,0 +1,14 @@
+{
+  "class_names": [
+    "Arborio",
+    "Basmati",
+    "Ipsala",
+    "Jasmine",
+    "Karacadag",
+    "non_rice"
+  ],
+  "train": 840,
+  "val": 180,
+  "test": 180,
+  "total": 1200
+}

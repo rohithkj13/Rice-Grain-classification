@@ -1,0 +1,14 @@
+{
+  "model_type": "KNN",
+  "n_neighbors": 11,
+  "accuracy": 0.987,
+  "image_size": 224,
+  "classes": [
+    "Arborio",
+    "Basmati",
+    "Ipsala",
+    "Jasmine",
+    "Karacadag"
+  ],
+  "training_samples": 5000
+}

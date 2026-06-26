@@ -1,0 +1,32 @@
+{
+  "class_names": [
+    "Arborio",
+    "Basmati",
+    "Ipsala",
+    "Jasmine",
+    "Karacadag"
+  ],
+  "classes": [
+    "Arborio",
+    "Basmati",
+    "Ipsala",
+    "Jasmine",
+    "Karacadag"
+  ],
+  "class_to_index": {
+    "Arborio": 0,
+    "Basmati": 1,
+    "Ipsala": 2,
+    "Jasmine": 3,
+    "Karacadag": 4
+  },
+  "image_size": 224,
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "color_format": "RGB",
+  "normalization": "divide_by_255",
+  "model_name": "MobileNetV2"
+}

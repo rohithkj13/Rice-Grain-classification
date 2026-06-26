@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: rice-classification-project
+    runtime: python
+    rootDir: Rice_Classification_Project
+    buildCommand: pip install -r requirements_flask.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT flask_app:app
+    healthCheckPath: /api/health
+    autoDeploy: true

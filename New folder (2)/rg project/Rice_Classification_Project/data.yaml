@@ -1,0 +1,7 @@
+path: C:/Users/ROHITH/Downloads/New folder (2) (3)/New folder (2)/rg project/Rice_Classification_Project/dataset
+
+train: images
+val: images
+
+names:
+  0: rice

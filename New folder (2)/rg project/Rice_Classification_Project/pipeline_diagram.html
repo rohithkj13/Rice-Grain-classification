@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rice Classification Pipeline – Block Diagram</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    padding: 40px 20px;
+    color: #1a1a2e;
+  }
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1b4332;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 40px;
+  }
+
+  /* ── Layout ── */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ── Stage block ── */
+  .stage {
+    width: 100%;
+    border-radius: 12px;
+    padding: 18px 24px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+    position: relative;
+  }
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .stage-icon {
+    font-size: 26px;
+    line-height: 1;
+  }
+  .stage-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .stage-num {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.65;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 8px;
+  }
+  .tag {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.45);
+    border: 1px solid rgba(255,255,255,0.6);
+  }
+
+  /* ── Arrow ── */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    z-index: 1;
+  }
+  .arrow-line {
+    width: 3px;
+    height: 28px;
+    background: #2d6a4f;
+  }
+  .arrow-head {
+    width: 0;
+    height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 13px solid #2d6a4f;
+  }
+  .arrow-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #2d6a4f;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 10px;
+    padding: 2px 9px;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── Stage colours ── */
+  .s1 { background: linear-gradient(135deg,#1b4332,#2d6a4f); color:#fff; }
+  .s2 { background: linear-gradient(135deg,#155e75,#0e7490); color:#fff; }
+  .s3 { background: linear-gradient(135deg,#7c3aed,#6d28d9); color:#fff; }
+  .s4 { background: linear-gradient(135deg,#b45309,#d97706); color:#fff; }
+  .s5 { background: linear-gradient(135deg,#065f46,#059669); color:#fff; }
+  .s6 { background: linear-gradient(135deg,#1e3a5f,#1d4ed8); color:#fff; }
+  .s7 { background: linear-gradient(135deg,#7f1d1d,#b91c1c); color:#fff; }
+
+  /* ── Sub-grid inside a stage ── */
+  .sub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .sub-box {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .sub-box-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .sub-box ul {
+    list-style: none;
+    padding: 0;
+  }
+  .sub-box ul li {
+    font-size: 11px;
+    padding: 2px 0;
+    opacity: 0.88;
+  }
+  .sub-box ul li::before {
+    content: "▸ ";
+    opacity: 0.7;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    max-width: 860px;
+    margin: 40px auto 0;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  .legend h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1b4332;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: #333;
+    line-height: 1.5;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  @media print {
+    body { background: #fff; padding: 10px; }
+    .stage { box-shadow: none; border: 1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🌾 Rice Grain Classification — End-to-End Pipeline</h1>
+<p class="subtitle">Optimized Deep Learning Pipeline · MobileNetV2 Transfer Learning · 5-Class Classification</p>
+
+<div class="pipeline">
+
+  <!-- ── Stage 1 ── -->
+  <div class="stage s1">
+    <div class="stage-header">
+      <span class="stage-icon">📦</span>
+      <div>
+        <div class="stage-num">Stage 1</div>
+        <div class="stage-title">Dataset Collection</div>
+      </div>
+    </div>
+    <div class="sub-grid">
+      <div class="sub-box">
+        <div class="sub-box-title">Source</div>
+        <ul>
+          <li>Rice Image Dataset</li>
+          <li>5 rice varieties</li>
+          <li>~15,000 images/class</li>
+          <li>JPG / PNG format</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Classes</div>
+        <ul>
+          <li>Basmati</li>
+          <li>Jasmine</li>
+          <li>Arborio</li>
+          <li>Ipsala</li>
+          <li>Karacadag</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Raw Stats</div>
+        <ul>
+          <li>~75,000 total images</li>
+          <li>Balanced classes</li>
+          <li>Variable resolution</li>
+          <li>Real-world conditions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">Raw Images</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ── Stage 2 ── -->
+  <div class="stage s2">
+    <div class="stage-header">
+      <span class="stage-icon">🧹</span>
+      <div>
+        <div class="stage-num">Stage 2</div>
+        <div class="stage-title">Data Cleaning &amp; Smart Reduction</div>
+      </div>
+    </div>
+    <div class="sub-grid">
+      <div class="sub-box">
+        <div class="sub-box-title">Quality Filter</div>
+        <ul>
+          <li>Blur detection (Laplacian)</li>
+          <li>Low-contrast removal</li>
+          <li>Corrupt file removal</li>
+          <li>Min-size check (50×50)</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Deduplication</div>
+        <ul>
+          <li>Perceptual hashing (pHash)</li>
+          <li>Hamming distance ≤ 6</li>
+          <li>Near-duplicate removal</li>
+          <li>Exact duplicate removal</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Smart Sampling</div>
+        <ul>
+          <li>Stratified sampling</li>
+          <li>4,000 images/class</li>
+          <li>20,000 total (balanced)</li>
+          <li>Reproducible seed</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tags" style="margin-top:12px;">
+      <span class="tag">dataset_cleaner.py</span>
+      <span class="tag">75K → 20K images</span>
+      <span class="tag">Balanced Classes</span>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">Clean Subset (20K)</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ── Stage 3 ── -->
+  <div class="stage s3">
+    <div class="stage-header">
+      <span class="stage-icon">⚙️</span>
+      <div>
+        <div class="stage-num">Stage 3</div>
+        <div class="stage-title">Preprocessing &amp; Augmentation</div>
+      </div>
+    </div>
+    <div class="sub-grid">
+      <div class="sub-box">
+        <div class="sub-box-title">Preprocessing</div>
+        <ul>
+          <li>Resize → 224×224</li>
+          <li>BGR → RGB conversion</li>
+          <li>MobileNetV2 normalise</li>
+          <li>tf.data pipeline</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Augmentation (Train)</div>
+        <ul>
+          <li>Random H/V flip</li>
+          <li>Random brightness ±15%</li>
+          <li>Random contrast ±15%</li>
+          <li>Random crop + zoom</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Dataset Split</div>
+        <ul>
+          <li>Train  — 70% (14,000)</li>
+          <li>Val    — 15%  (3,000)</li>
+          <li>Test   — 15%  (3,000)</li>
+          <li>Stratified split</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tags" style="margin-top:12px;">
+      <span class="tag">preprocess.py</span>
+      <span class="tag">optimized_pipeline.py</span>
+      <span class="tag">AUTOTUNE prefetch</span>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">Batched tf.data Datasets</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ── Stage 4 ── -->
+  <div class="stage s4">
+    <div class="stage-header">
+      <span class="stage-icon">🧠</span>
+      <div>
+        <div class="stage-num">Stage 4</div>
+        <div class="stage-title">Model Training — Two-Phase Transfer Learning</div>
+      </div>
+    </div>
+    <div class="sub-grid">
+      <div class="sub-box">
+        <div class="sub-box-title">Architecture</div>
+        <ul>
+          <li>MobileNetV2 backbone</li>
+          <li>ImageNet weights</li>
+          <li>GlobalAvgPooling2D</li>
+          <li>BatchNorm + Dropout</li>
+          <li>Dense 512 → 256 → 5</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Phase 1 — Head</div>
+        <ul>
+          <li>Base frozen</li>
+          <li>LR = 1e-3</li>
+          <li>20 epochs max</li>
+          <li>Label smoothing 0.05</li>
+          <li>L2 regularisation</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Phase 2 — Fine-Tune</div>
+        <ul>
+          <li>Unfreeze top 30 layers</li>
+          <li>LR = 1e-4</li>
+          <li>15 epochs max</li>
+          <li>EarlyStopping (pat=5)</li>
+          <li>ReduceLROnPlateau</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tags" style="margin-top:12px;">
+      <span class="tag">train_model.py</span>
+      <span class="tag">optimized_pipeline.py</span>
+      <span class="tag">ModelCheckpoint</span>
+      <span class="tag">CSVLogger</span>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">Trained Model (.h5)</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ── Stage 5 ── -->
+  <div class="stage s5">
+    <div class="stage-header">
+      <span class="stage-icon">📊</span>
+      <div>
+        <div class="stage-num">Stage 5</div>
+        <div class="stage-title">Model Evaluation</div>
+      </div>
+    </div>
+    <div class="sub-grid">
+      <div class="sub-box">
+        <div class="sub-box-title">Metrics</div>
+        <ul>
+          <li>Accuracy / Top-2 Acc</li>
+          <li>Precision / Recall</li>
+          <li>F1-Score per class</li>
+          <li>Confusion Matrix</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Validation</div>
+        <ul>
+          <li>Held-out test set</li>
+          <li>Per-class breakdown</li>
+          <li>Loss / Accuracy curves</li>
+          <li>Overfitting check</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Outputs</div>
+        <ul>
+          <li>evaluation_results.json</li>
+          <li>training_phase1/2.csv</li>
+          <li>Best checkpoint saved</li>
+          <li>Metadata JSON</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">Validated Model</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ── Stage 6 ── -->
+  <div class="stage s6">
+    <div class="stage-header">
+      <span class="stage-icon">🌐</span>
+      <div>
+        <div class="stage-num">Stage 6</div>
+        <div class="stage-title">Flask API Deployment</div>
+      </div>
+    </div>
+    <div class="sub-grid">
+      <div class="sub-box">
+        <div class="sub-box-title">Backend</div>
+        <ul>
+          <li>Flask REST API</li>
+          <li>KNN + CNN hybrid</li>
+          <li>Stable predictor</li>
+          <li>3-tier confidence</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Endpoints</div>
+        <ul>
+          <li>POST /api/predict</li>
+          <li>GET  /api/health</li>
+          <li>GET  /api/rice-info</li>
+          <li>POST /api/predict-batch</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Frontend</div>
+        <ul>
+          <li>Upload / Camera tab</li>
+          <li>Statistics dashboard</li>
+          <li>History &amp; Compare</li>
+          <li>PDF / CSV export</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tags" style="margin-top:12px;">
+      <span class="tag">flask_app.py</span>
+      <span class="tag">app.js</span>
+      <span class="tag">http://127.0.0.1:5000</span>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <div class="arrow-label">User Uploads Image</div>
+    <div class="arrow-line"></div>
+    <div class="arrow-head"></div>
+  </div>
+
+  <!-- ── Stage 7 ── -->
+  <div class="stage s7">
+    <div class="stage-header">
+      <span class="stage-icon">🔍</span>
+      <div>
+        <div class="stage-num">Stage 7</div>
+        <div class="stage-title">Prediction Output</div>
+      </div>
+    </div>
+    <div class="sub-grid">
+      <div class="sub-box">
+        <div class="sub-box-title">Detection Tiers</div>
+        <ul>
+          <li>High ≥70% → Rice: Yes</li>
+          <li>Medium 40–69% → Uncertain</li>
+          <li>Low &lt;40% → Not detected</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Output Fields</div>
+        <ul>
+          <li>Rice variety name</li>
+          <li>Confidence score %</li>
+          <li>Quality grade (A/B/C)</li>
+          <li>Price range (Rs/kg)</li>
+          <li>Cooking tips &amp; uses</li>
+        </ul>
+      </div>
+      <div class="sub-box">
+        <div class="sub-box-title">Post-Processing</div>
+        <ul>
+          <li>Shape override (AR)</li>
+          <li>Stability layer</li>
+          <li>History auto-save</li>
+          <li>Report download</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /pipeline -->
+
+<!-- ── Legend ── -->
+<div class="legend">
+  <h3>Key Techniques &amp; Design Decisions</h3>
+  <div class="legend-grid">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#1b4332;"></div>
+      <div><strong>Perceptual Hashing</strong> — Removes near-duplicate images using average-hash + Hamming distance, preventing the model from memorising repeated samples.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#0e7490;"></div>
+      <div><strong>Laplacian Blur Detection</strong> — Images with variance &lt; 80 are discarded, ensuring only sharp, informative grains enter training.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#6d28d9;"></div>
+      <div><strong>Two-Phase Transfer Learning</strong> — Phase 1 trains only the head (fast convergence); Phase 2 fine-tunes top base layers (higher accuracy).</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#d97706;"></div>
+      <div><strong>Label Smoothing (0.05)</strong> — Prevents overconfident predictions and improves generalisation to unseen real-world images.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#059669;"></div>
+      <div><strong>tf.data + AUTOTUNE</strong> — Parallel image loading and prefetching eliminates I/O bottlenecks, maximising GPU utilisation.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#1d4ed8;"></div>
+      <div><strong>3-Tier Confidence System</strong> — High / Medium / Low tiers replace binary rejection, giving users helpful feedback instead of hard errors.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#b91c1c;"></div>
+      <div><strong>Aspect-Ratio Shape Override</strong> — AR &gt; 3.5 → Basmati, AR &lt; 1.6 → Arborio. Morphological signal corrects ML errors on clear cases.</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#374151;"></div>
+      <div><strong>Stratified 70/15/15 Split</strong> — Each split preserves class proportions, ensuring fair evaluation across all 5 rice varieties.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
